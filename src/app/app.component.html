@@ -1,23 +1,28 @@
-Animal Classifier
-<!-- <img [src]="imageSrc" #img/>
-<button (click)="predict()">predict</button> -->
+<div fxLayout="column" fxLayoutAlign="center center">
+  <mat-toolbar color="primary">
+    Animal Classifier
+  </mat-toolbar>
 
-<div class="custom-file">
-  <input type="file" (change)="fileChange($event)">
-  <label>Select File</label>
+  <input hidden #fileInput type="file" (change)="fileChange($event)">
+  <button mat-raised-button color="primary" (click)="fileInput.click()">Choose Image</button>
 
-  <img [src]="imageSrc" #img *ngIf="imageSrc"/>
-
-  <!-- <div *ngFor="let prediction of predictions">
-    {{prediction.className}} - {{prediction.probability}}
-  </div> -->
-</div>
-{{ animalPrediction }}
-<div>
-  <!-- <div *ngFor="let animal of animals" fxLayout="column">
-    {{ animal }}
-  </div> -->
-  <div *ngFor="let pred of predictions" fxLayout="column">
-    {{ pred }}
+  <div fxLayoutAlign="center center">
+    <img [src]="imageSrc" #img *ngIf="imageSrc"/>
   </div>
-</div>
+  <div *ngIf="animalPrediction" class="mat-subheading-1">
+    AI says this is a: {{ animalPrediction }}
+  </div>
+
+  <mat-card *ngIf="animalPrediction">
+    <mat-card-header>
+      <mat-card-title>Prediction Percentages: </mat-card-title>
+    </mat-card-header>
+    <mat-card-content fxLayout="column" fxLayoutAlign="center center">
+      <div *ngFor="let prediction of predictions">
+        {{prediction.animal}} - {{prediction.percentage | number: '1.2-2'}}%
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+</div> 
+

@@ -1,5 +1,7 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Animals, Prediction } from './prediction';
 import * as tf from '@tensorflow/tfjs';
+import { pad1d } from '@tensorflow/tfjs';
 
 @Component({
   selector: 'app-root',
@@ -7,10 +9,11 @@ import * as tf from '@tensorflow/tfjs';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-  animals = ['butterfly', 'cat', 'chicken', 'cow', 'dog', 'elephant', 'horse', 'sheep', 'spider', 'squirrel'];
+  animals = Animals;
   model: any;
   output: any;
-  predictions = [];
+  predictions: Prediction[] = [];
+  percentages: number[];
   imageSrc = '';
   animalPrediction: string;
 
@@ -19,7 +22,7 @@ export class AppComponent implements OnInit {
   constructor() { }
 
   async ngOnInit() {
-    this.model = await tf.loadLayersModel('../assets/tfjs_model/model.json');
+    this.model = await tf.loadLayersModel('../assets/tfjs_model_5/model.json');
   }
 
   preprocess(img: ImageData) {
@@ -32,6 +35,8 @@ export class AppComponent implements OnInit {
   }
 
   async fileChange(event) {
+    this.predictions = [];
+    this.animalPrediction = '';
     if (event.target.files && event.target.files[0]) {
       const reader = new FileReader();
 
@@ -42,8 +47,9 @@ export class AppComponent implements OnInit {
         setTimeout(async () => {
           const imgEl = this.imageEl.nativeElement;
           this.output = await this.model.predict(this.preprocess(imgEl));
-          this.predictions = Array.from(this.output.dataSync());
-          this.findMax(this.predictions.concat());
+          this.percentages = Array.from(this.output.dataSync());
+          this.createPredArr();
+          this.findMax(this.percentages);
         }, 0);
 
       };
@@ -51,9 +57,18 @@ export class AppComponent implements OnInit {
   }
 
   findMax(arr: number[]) {
-    const index = this.predictions.indexOf(arr.sort()[arr.length - 1]);
+    const index = this.percentages.indexOf(Math.max(...arr));
     this.animalPrediction = this.animals[index]
-    console.log(this.predictions);
+  }
+
+  createPredArr() {
+    for(let i = 0; i < this.animals.length; i++) {
+      this.percentages[i] = this.percentages[i] * 100;
+      let pred = { animal: this.animals[i], percentage: this.percentages[i]};
+      this.predictions.push(pred);
+    }
+
+    this.predictions.sort((p1, p2) => p2.percentage - p1.percentage);
   }
 
 
